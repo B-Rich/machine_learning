@@ -7,4 +7,5 @@ It's ugly, slow, and possibly incorrect. Read at your own risk.
 ## Contents
 
 * **ada.py** An implementation of AdaBoost with decision stumps as weak learners
+* **adaplot.py** A script to plot the performance of AdaBoost
 * **gauss.py** Gaussian Processes regression with a Gaussian kernel
