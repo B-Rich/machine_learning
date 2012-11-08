@@ -5,10 +5,9 @@
 # as weak learners.
 
 import numpy as np
-import scipy as sci
 import math as m
 import matplotlib 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as pl
 import matplotlib.cm as cm
 
 def load_data(suffix='train.csv'):
@@ -23,8 +22,8 @@ def show_image(img):
   """Plot the input as a greyscale
   image for sanity checking"""
   temp = np.reshape(x[3], (28,28))
-  plt.imshow(temp, cmap = cm.Greys_r)
-  plt.show()
+  pl.imshow(temp, cmap = cm.Greys_r)
+  pl.show()
 
 class DecisionStump:
   def __init__(self, dimension=-1, thresh=-1, inequal=-1):
@@ -82,28 +81,35 @@ class AdaBoost:
       h = DecisionStump()
       guess, herr = h.train(data,labels,weights)
       # print i, herr
+      # add new classifier and coefficient
       self.alphas.append(m.log((1-herr)/max(herr,1e-16))/2)
       self.classifiers.append(h)
+
+      # normalization factor
       z = 2 * m.sqrt(max(herr,1e-16) * (1 - herr))
+
+      # re-weight the features
       temp = np.multiply(-self.alphas[i] * labels, guess)
       weights = np.multiply(weights, np.exp(temp))/z
 
+      # compute and save training and testing error
       trainerr.append(self.check(data, labels))
       testerr.append(self.check(tdat, tlab))
+
+      # We need to plot this stuff
       print i, self.alphas[i], trainerr[i], testerr[i]
     return trainerr, testerr
 
-        #burp = self.evaluate(data)
-        #error = np.zeros(len(burp), 'int')
-        #error[burp != labels] = 1
-        #print i, "errors:", error.sum(), "ratio:", error.sum()/float(len(error))
-
   def evaluate(self, data):
     n = len(data)
+    # start with a neutral prediction
     result = np.zeros(n, 'float')
+
+    # add the weighted vote of each weak classifier
     for i in range(len(self.alphas)):
       h = self.classifiers[i]
       result += h.classify(data) * self.alphas[i]
+    # take the sign to get the final classification
     return np.sign(result)
 
   def check(self, data, labels):
@@ -114,11 +120,4 @@ class AdaBoost:
 
 # Debugging
 a = AdaBoost()
-a.train(T=15)
-
-"""
-x,y = load_data()
-d = DecisionStump()
-D = np.ones(len(x[0]),'float')
-d.train(x,y,D)
-d.debug()"""
+train, test = a.train()
