@@ -54,7 +54,7 @@ class DecisionStump:
             candidate = DecisionStump(dim,t,flip)
             guess = candidate.classify(data)
             # initialize to zero error
-            error = np.zeros(cols,'int')
+            error = np.zeros(rows,'int')
             error[guess != label] = 1
             weighted = np.dot(error,D)
             #print "dim %d, t %d, iq %s, w %f, min %f" % (dim, t, flip, weighted, min_error)
@@ -63,13 +63,56 @@ class DecisionStump:
               self.dim = dim
               self.t = t
               self.iq = flip
+      return self.classify(data), min_error
 
   def debug(self):
     print self.dim, self.t, self.iq
 
+class AdaBoost:
+  def train(self, T=500, suffix='train.csv'):
+    data, labels = load_data(suffix)
+    rows, cols = np.shape(data)
+    weights = np.ones(rows, 'float')/rows
+    self.alphas = []
+    self.classifiers = []
+    for i in xrange(T):
+      h = DecisionStump()
+      guess, herr = h.train(data,labels,weights)
+      # print i, herr
+      self.alphas.append(m.log((1-herr)/max(herr,1e-16))/2)
+      self.classifiers.append(h)
+      z = 2 * m.sqrt(max(herr,1e-16) * (1 - herr))
+      temp = np.multiply(-self.alphas[i] * labels, guess)
+      weights = np.multiply(weights, np.exp(temp))/z
+      if True:
+        burp = self.evaluate(data)
+        error = np.zeros(len(burp), 'int')
+        error[burp != labels] = 1
+        print i, "errors:", error.sum(), "ratio:", error.sum()/float(len(error))
+
+  def evaluate(self, data):
+    n = len(data)
+    result = np.zeros(n, 'float')
+    for i in range(len(self.alphas)):
+      h = self.classifiers[i]
+      result += h.classify(data) * self.alphas[i]
+    return np.sign(result)
+
+  def check(self, suffix='test.csv'):
+    data, labels = load_data(suffix)
+    guess = self.evaluate(data)
+    error = np.zeros(len(guess), 'int')
+    error[guess != labels] = 1
+    print "errors:", error.sum(), "ratio:", error.sum()/float(len(error))
+
 # Debugging
+a = AdaBoost()
+a.train(T=7)
+print "checking"
+a.check()
+"""
 x,y = load_data()
 d = DecisionStump()
 D = np.ones(len(x[0]),'float')
 d.train(x,y,D)
-d.debug()
+d.debug()"""
