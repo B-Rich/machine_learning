@@ -71,10 +71,13 @@ class DecisionStump:
 class AdaBoost:
   def train(self, T=500, suffix='train.csv'):
     data, labels = load_data(suffix)
+    tdat, tlab = load_data('test.csv')
     rows, cols = np.shape(data)
     weights = np.ones(rows, 'float')/rows
     self.alphas = []
     self.classifiers = []
+    trainerr = []
+    testerr = []
     for i in xrange(T):
       h = DecisionStump()
       guess, herr = h.train(data,labels,weights)
@@ -84,11 +87,16 @@ class AdaBoost:
       z = 2 * m.sqrt(max(herr,1e-16) * (1 - herr))
       temp = np.multiply(-self.alphas[i] * labels, guess)
       weights = np.multiply(weights, np.exp(temp))/z
-      if True:
-        burp = self.evaluate(data)
-        error = np.zeros(len(burp), 'int')
-        error[burp != labels] = 1
-        print i, "errors:", error.sum(), "ratio:", error.sum()/float(len(error))
+
+      trainerr.append(self.check(data, labels))
+      testerr.append(self.check(tdat, tlab))
+      print i, self.alphas[i], trainerr[i], testerr[i]
+    return trainerr, testerr
+
+        #burp = self.evaluate(data)
+        #error = np.zeros(len(burp), 'int')
+        #error[burp != labels] = 1
+        #print i, "errors:", error.sum(), "ratio:", error.sum()/float(len(error))
 
   def evaluate(self, data):
     n = len(data)
@@ -98,18 +106,16 @@ class AdaBoost:
       result += h.classify(data) * self.alphas[i]
     return np.sign(result)
 
-  def check(self, suffix='test.csv'):
-    data, labels = load_data(suffix)
+  def check(self, data, labels):
     guess = self.evaluate(data)
     error = np.zeros(len(guess), 'int')
     error[guess != labels] = 1
-    print "errors:", error.sum(), "ratio:", error.sum()/float(len(error))
+    return error.sum()/float(len(error))
 
 # Debugging
 a = AdaBoost()
-a.train(T=7)
-print "checking"
-a.check()
+a.train(T=15)
+
 """
 x,y = load_data()
 d = DecisionStump()
