@@ -25,7 +25,7 @@ def plot_data(data):
 
   pl.show()
 
-class Gauss:
+class GaussianProcess:
   def __init__(self, sigma=0.5):
     self.sig = sigma
 
@@ -40,7 +40,30 @@ class Gauss:
       for j in xrange(n):
         self.K[i][j] = self.get_kernel_diff(data[i],data[j])
 
+  def fit(self, x, y):
+    pass
 
+  def predict(self, x):
+    pass
 
+def magic(data):
+  x = data[:,0]
+  y = data[:,1]
+  gp = GaussianProcess(sigma=0.5)
+  gp.fit(x,y)
+  pred, sigma = gp.predict(x)
 
+  fig = pl.figure()
+  pl.plot(x,y,'r.',markersize=10,label=u'Observations')
+  pl.plot(x,pred, 'b-', label=u'Prediction')
+  pl.fill(np.concatenate([x,x[::-1]]), \
+          np.concatenate([pred - 1.96 * sigma,
+                         (pred + 1.96 * sigma)[::-1]]), \
+          alpha=.5, fc='b', ec='None', label='95% confidence interval')
+  pl.xlabel('$x$')
+  pl.ylabel('$y$')
+  pl.ylim(-10,20)
+  pl.legend(loc='upper left')
+
+magic(load_data())
 plot_data(load_data())
