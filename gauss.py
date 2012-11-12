@@ -27,11 +27,11 @@ def plot_data(data):
 class GaussianKernel:
   def __init__(self, sigma=0.5):
     self.sigma = sigma
-    self.denom = -1 * sigma**2
+    self.denom = -2 * self.sigma**2
     self.vec_eval = np.vectorize(self.eval)
 
   def eval(self, x1, x2):
-    return math.exp(lin.norm(x1 + x2) / self.denom)
+    return math.exp(lin.norm(x1 - x2)**2 / self.denom)
 
   def eval_row(self, x1, x):
     return self.vec_eval(x1,x)
@@ -41,7 +41,7 @@ class GaussianKernel:
 
 class GaussianProcess:
   def __init__(self, noise=0.5, sigma=0.5):
-    self.sig = noise
+    self.sig = noise**2
     self.kernel = GaussianKernel(sigma)
 
   def fit(self, X, y):
