@@ -45,13 +45,17 @@ class GaussianProcess:
     self.kernel = GaussianKernel(sigma)
 
   def fit(self, X, y):
-    self.tX = X
-    self.ty = y
-    self.K = self.kernel.build_matrix(X)
-    self.Kinv = lin.inv(self.K)
+    self.tX, self.ty = np.mat(X),np.mat(y)
+    self.Kinv = lin.inv(self.kernel.build_matrix(X) + (self.sig * np.identity(len(X))))
+
+  def _predict(self, x):
+    kt = self.kernel.eval_row(x,self.tX)
+    y = kt * self.Kinv * self.ty.T
+    vy = self.kernel.eval(x,x) - (kt * self.Kinv * kt.T)
+    return y, vy
 
   def predict(self, X):
-    pass
+    return np.vectorize(self._predict)(X)
 
 
 def magic(data,sigma,noise):
