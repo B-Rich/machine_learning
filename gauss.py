@@ -3,9 +3,9 @@
 #
 # Gaussian Process regression with a Gaussian kernel
 
+import math
 import numpy as np
-import scipy as sci
-import math as m
+import numpy.linalg as lin
 import matplotlib
 from matplotlib import pyplot as pl
 
@@ -25,33 +25,37 @@ def plot_data(data):
 
   pl.show()
 
-class GaussianProcess:
+class GaussianKernel:
   def __init__(self, sigma=0.5):
-    self.sig = sigma
+    self.sigma = sigma
+    self.denom = -1 * sigma**2
 
-  def get_kernel_diff(self, x1, x2):
-    top = -1 * m.sqrt(x1**2 + x2**2)**2
-    return m.exp(top/(2*self.sig**2))
+  def eval(self, x1, x2):
+    return math.exp(lin.norm(x1 + x2) / self.denom)
 
-  def build_kernel(self, data):
-    n = len(data)
-    self.K = np.reshape(np.zeros(n**2), (n,n))
+  def build_matrix(self, X):
+    n = len(X)
+    K = np.zeros((n,n))
     for i in xrange(n):
       for j in xrange(n):
-        self.K[i][j] = self.get_kernel_diff(data[i],data[j])
+        K[i][j] = self.eval(X[i],X[j])
+    return K
 
-  def fit(self, x, y):
-    pass
+class GaussianProcess:
+  def __init__(self, noise=0.5, sigma=0.5):
+    self.sig = noise
+    self.kernel = GaussianKernel(sigma)
 
-  def predict(self, x):
-    pass
+  def fit(self, x):
+    self.K = self.kernel.build_matrix(x)
 
 def magic(data):
+  sigma = 0.5
   x = data[:,0]
   y = data[:,1]
-  gp = GaussianProcess(sigma=0.5)
-  gp.fit(x,y)
-  pred, sigma = gp.predict(x)
+  gp = GaussianProcess(noise=0.5)
+  gp.fit(x)
+  pred = y
 
   fig = pl.figure()
   pl.plot(x,y,'r.',markersize=10,label=u'Observations')
