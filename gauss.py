@@ -22,39 +22,44 @@ def plot_data(data):
   pl.xlabel('x')
   pl.ylabel('y')
   pl.legend(loc='upper left')
-
   pl.show()
 
 class GaussianKernel:
   def __init__(self, sigma=0.5):
     self.sigma = sigma
     self.denom = -1 * sigma**2
+    self.vec_eval = np.vectorize(self.eval)
 
   def eval(self, x1, x2):
     return math.exp(lin.norm(x1 + x2) / self.denom)
 
+  def eval_row(self, x1, x):
+    return self.vec_eval(x1,x)
+
   def build_matrix(self, X):
-    n = len(X)
-    K = np.zeros((n,n))
-    for i in xrange(n):
-      for j in xrange(n):
-        K[i][j] = self.eval(X[i],X[j])
-    return K
+    return self.vec_eval(X[:,np.newaxis],X)
 
 class GaussianProcess:
   def __init__(self, noise=0.5, sigma=0.5):
     self.sig = noise
     self.kernel = GaussianKernel(sigma)
 
-  def fit(self, x):
-    self.K = self.kernel.build_matrix(x)
+  def fit(self, X, y):
+    self.tX = X
+    self.ty = y
+    self.K = self.kernel.build_matrix(X)
+    self.Kinv = lin.inv(self.K)
+
+  def predict(self, X):
+    pass
+
 
 def magic(data):
   sigma = 0.5
   x = data[:,0]
   y = data[:,1]
   gp = GaussianProcess(noise=0.5)
-  gp.fit(x)
+  gp.fit(x,y)
   pred = y
 
   fig = pl.figure()
