@@ -34,10 +34,10 @@ class GaussianKernel:
     return math.exp(lin.norm(x1 - x2)**2 / self.denom)
 
   def eval_row(self, x1, x):
-    return self.vec_eval(x1,x)
+    return np.mat(self.vec_eval(x1,x))
 
   def build_matrix(self, X):
-    return self.vec_eval(X[:,np.newaxis],X)
+    return np.mat(self.vec_eval(X[:,np.newaxis],X))
 
 class GaussianProcess:
   def __init__(self, noise=0.5, sigma=0.5):
@@ -54,25 +54,26 @@ class GaussianProcess:
     pass
 
 
-def magic(data):
-  sigma = 0.5
+def magic(data,sigma,noise):
   x = data[:,0]
   y = data[:,1]
-  gp = GaussianProcess(noise=0.5)
+  gp = GaussianProcess(noise=noise, sigma=sigma)
+  mesh = np.linspace(np.min(x),np.max(x),num=150)
   gp.fit(x,y)
-  pred = y
+  pred, var = gp.predict(mesh)
+  sigma = np.sqrt(var)
 
   fig = pl.figure()
   pl.plot(x,y,'r.',markersize=10,label=u'Observations')
-  pl.plot(x,pred, 'b-', label=u'Prediction')
-  pl.fill(np.concatenate([x,x[::-1]]), \
+  pl.plot(mesh,pred, 'b-', label=u'Prediction')
+  pl.fill(np.concatenate([mesh,mesh[::-1]]), \
           np.concatenate([pred - 1.96 * sigma,
                          (pred + 1.96 * sigma)[::-1]]), \
           alpha=.5, fc='b', ec='None', label='95% confidence interval')
   pl.xlabel('$x$')
   pl.ylabel('$y$')
-  pl.ylim(-10,20)
   pl.legend(loc='upper left')
+  pl.show()
 
-magic(load_data())
-plot_data(load_data())
+magic(load_data(),3.0,0.5)
+#plot_data(load_data())
