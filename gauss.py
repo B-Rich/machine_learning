@@ -52,7 +52,7 @@ class GaussianProcess:
     self.tX, self.ty = np.mat(data[:,0]),np.mat(data[:,1])
 
     # compute covariance matrix
-    K = self.kernel.build_matrix(data[:,0]) + (self.noise**2 * np.identity(len(data[:,0])))
+    K = self.kernel.build_matrix(data[:,0])
 
     # account for noise
     self.K = K + (self.noise**2 * np.identity(len(data[:,0])))
