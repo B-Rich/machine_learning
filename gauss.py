@@ -57,8 +57,13 @@ class GaussianProcess:
   def predict(self, X):
     return np.vectorize(self._predict)(X)
 
+  def eval(self, data):
+    x,y = data[:,0], data[:,1]
+    pred, var = self.predict(x)
+    # return squared error loss
+    return ((y - pred)**2).sum()
 
-def magic(data,sigma,noise):
+def plot_regression(data,sigma,noise):
   x = data[:,0]
   y = data[:,1]
   gp = GaussianProcess(noise=noise, sigma=sigma)
@@ -66,6 +71,7 @@ def magic(data,sigma,noise):
   gp.fit(x,y)
   pred, var = gp.predict(mesh)
   sigma = np.sqrt(var)
+  print gp.eval(data)
 
   fig = pl.figure()
   pl.plot(x,y,'r.',markersize=10,label=u'Observations')
@@ -79,5 +85,5 @@ def magic(data,sigma,noise):
   pl.legend(loc='upper left')
   pl.show()
 
-magic(load_data(),3.0,0.5)
+plot_regression(load_data(),3.0,0.5)
 #plot_data(load_data())
