@@ -57,14 +57,30 @@ def index_obs(obs_char):
   else:
     return ord(obs_char) - ord('a')
 
+def encode(s):
+  return map(lambda c:index_obs(c), list(s))
+
 def show_obs(obs_index):
   """Convert observed node index back to character"""
   if obs_index == 27:
     return '*'
-  elif obs_char == ' ':
+  elif obs_index == 26:
     return ' '
   else:
     return chr(obs_index + ord('a'))
+
+def decode(o):
+  return ''.join(map(lambda c:show_obs(c),o))
+
+def make_start(size):
+  """Create a random starting vector"""
+  a = np.random.random_sample(size)
+  return log_normalize(np.log(a))
+
+def make_matrix(n,m):
+  """Create a random matrix"""
+  mat = np.random.random_sample((n,m))
+  return log_normalize_matrix(np.log(mat))
 
 class HiddenMarkovModel:
   def __init__(self, start_vec, transitions, emissions):
@@ -72,9 +88,9 @@ class HiddenMarkovModel:
     self.tran = transitions
     self.obs = emissions
     self.num_hidden = len(transitions)
-    self.num_observed = 26
+    self.num_observed = 27
 
-  def viterbi(self, emissions):
+  def viterbi(self, ys):
     """Calculate most likely sequence of hidden states
       to result in 'ys'"""
     obs_count = len(ys)
@@ -97,14 +113,16 @@ class HiddenMarkovModel:
         for ns in states:
           # again, add log values
           p = table[ns, t-1] + self.tran[ns,s] + self.obs[s][ys[t]]
-          if p < guess:
+          if p > guess:
             guess = p
             path[s,t] = ns
         table[s,t] = guess
 
     # reconstruct path
     fpath = []
-    for t in range(obs_count).reverse():
+    times = range(obs_count)
+    times.reverse()
+    for t in times:
       p = table[0,t]
       g = 0
       for s in states:
@@ -113,20 +131,29 @@ class HiddenMarkovModel:
           g = s
       fpath.append(g)
 
-    return fpath.reverse()
+    fpath.reverse()
+    return fpath
 
   def generate(self, length):
     """Generate output with the HMM"""
     out = []
     states = range(self.num_hidden)
     s = pick_item(self.start)
-    out.append(rand_pick(self.emissions[s,:]))
+    out.append(pick_item(self.obs[s,:]))
  
     # do a random walk
     while(length > len(out)):
       s = pick_item(self.tran[s,:])
-      out.append(rand_pick(self.emissions[s,:]))
+      out.append(pick_item(self.obs[s,:]))
  
     # translate and join the message
-    msg = ''.join(map(lambda c:show_obs(c),out))
-    return msg
+    return decode(out)
+
+Nh = 10
+pi = make_start(Nh)
+theta = make_matrix(Nh,Nh)
+omega = make_matrix(Nh,27)
+h = HiddenMarkovModel(pi,theta,omega)
+s = h.generate(150)
+print s
+print h.viterbi(encode(s))
