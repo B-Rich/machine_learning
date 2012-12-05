@@ -48,15 +48,17 @@ def readSatData(fname='tr'):
   X = data[:,1:]
   return X,y
 
-s = svm.SVM(10)
+r = svm.RBFKernel(2)
+s = svm.SVM(10,kernel=r)
 #X,y = make2dData(200)
 #c.train(X,y)
 #print c.alphas
-#print "final error", c.test(X,y)
 #print c.findC(X,y,count=5)
 X,y = readSatData()
-c = s.findC(X,y,count=10,kfolds=3)
-s = svm.SVM(c)
+#c = s.findC(X,y,count=10,kfolds=3)
+c = 8.3
+s = svm.SVM(c,kernel=svm.RBFKernel(2))
 s.train(X,y)
 Xt,yt = readSatData('t')
 print "final error", s.test(Xt,yt)
+#print "final error", s.test(X,y)

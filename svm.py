@@ -22,7 +22,7 @@ class RBFKernel:
     self.gamma = 1 / (2.0 * sigma**2)
 
   def eval(self, x1, x2):
-    return np.exp(-gamma * lin.norm(x1 - x2)**2)
+    return np.exp(-self.gamma * lin.norm(x1 - x2)**2)
 
 class SVM:
   # Support Vector Machine Classifier
@@ -67,6 +67,13 @@ class SVM:
     error[guess != y] = 1
     return np.float(np.sum(error)) / len(X)
 
+  def countSupVectors(self):
+    count = 0
+    for a in self.alphas:
+      if a == 0:
+      	count += 1
+    return count
+
   def findC(self, X, y, count=50, kfolds=5):
     # find a good estimate of C with kfold cross validation
 
@@ -75,11 +82,14 @@ class SVM:
     np.random.shuffle(data)
     partitions = np.array_split(data, kfolds)
     candidates = np.logspace(0, 5, num=count, base=np.e)
+    err = np.zeros(count)
+    svec = err.copy()
 
     minErr = np.inf
     C = candidates[0]
-    for c in candidates:
+    for index, c in enumerate(candidates):
       errors = np.zeros(kfolds)
+      supvec_count = errors.copy()
       for i in range(kfolds):
         test = partitions[i]
         train = np.vstack([partitions[x] for x in range(kfolds) if x != i])
@@ -90,12 +100,16 @@ class SVM:
         temp = SVM(c, self.k)
         temp.train(trainx, trainy)
         errors[i] = temp.test(testx, testy)
-      err = np.mean(errors)
-      print c, err, minErr
-      if err < minErr:
+        supvec_count[i] = temp.countSupVectors()
+      err[index] = np.mean(errors)
+      svec[index] = np.mean(supvec_count)
+      print c, err
+      if err[index] < minErr:
         C = c
-        minErr = err
+        minErr = err[index]
 
-    print candidates
+    print "C, err, #svec"
+    for i in range(count):
+    	print candidates[i], err[i], svec[i]
     print "Final value: ", C
     return C
