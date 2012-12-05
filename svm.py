@@ -10,8 +10,8 @@ from numpy import linalg as lin
 # plotting data
 from matplotlib import pyplot as pl
 
-# generate test data
-from sklearn.datasets.samples_generator import make_blobs
+# SMO class for training
+from smo import SMO
 
 class LinKernel:
   # Linear Kernel
@@ -28,15 +28,18 @@ class RBFKernel:
     return np.exp(-gamma * lin.norm(x1 - x2)**2)
 
 class SVM:
+  # Support Vector Machine Classifier
   def __init__(self, kernel, C):
     self.k = kernel
     self.C = C
+    self.core = SMO(kernel, C)
 
   def train(self, X, y):
-    pass
+    raise NotImplementedError
 
   def classify(self, X):
-    pass
+    raise NotImplementedError
 
   def test(self, X, y):
-    pass
+    raise NotImplementedError
+
