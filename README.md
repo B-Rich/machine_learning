@@ -9,3 +9,4 @@ It's ugly, slow, and possibly incorrect. Read at your own risk.
 * **ada.py** An implementation of AdaBoost with decision stumps as weak learners
 * **adaplot.py** A script to plot the performance of AdaBoost
 * **gauss.py** Gaussian Processes regression with a Gaussian kernel
+* **svm.py** An implementation of a Support Vector Machine trained with Sequential Minimal Optimization
