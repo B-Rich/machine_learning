@@ -3,20 +3,29 @@
 #
 # SVM training with SMO
 
+# numerical computing
 import numpy as np
 from numpy import linalg as lin
+
+# plotting data
 from matplotlib import pyplot as pl
 
+# generate test data
+from sklearn.datasets.samples_generator import make_blobs
+
 class LinKernel:
+  # Linear Kernel
   def eval(self, x1, x2):
-    pass
+    return np.dot(x1,x2)
 
 class RBFKernel:
+  # Gaussian Kernel
   def __init__(self, sigma):
     self.sigma = sigma
+    self.gamma = 1 / (2.0 * sigma**2)
 
   def eval(self, x1, x2):
-    pass
+    return np.exp(-gamma * lin.norm(x1 - x2)**2)
 
 class SVM:
   def __init__(self, kernel, C):
