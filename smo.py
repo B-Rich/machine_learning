@@ -198,4 +198,7 @@ class SMO:
     self.kcache = np.zeros((n,n))
     for i in xrange(n):
       for j in xrange(n):
-        self.kcache[i][j] = self.k.eval(self.examples[i], self.examples[j])
+        if i <= j:
+          self.kcache[i][j] = self.k.eval(self.examples[i], self.examples[j])
+        else:
+          self.kcache[i][j] = self.kcache[j][i]
