@@ -38,7 +38,7 @@ class SMO:
     loops = 0
     # main training loop
     while dirty or examineAll:
-      print "on loop", loops
+      print "on loop", loops, "num support vectors", np.shape(np.nonzero(self.alphas))[1]
       dirty = False
       if examineAll:
         # consider all examples
