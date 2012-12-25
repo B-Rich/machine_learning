@@ -19,7 +19,7 @@ import svm
 
 def make2dData(n_samples):
   # generate a 2d 2-class dataset
-  X,y = make_blobs(n_samples=n_samples, centers=2)
+  X,y = make_blobs(n_samples=n_samples, centers=[[-1,-1],[1,1]])
   y[y==0] = -1
   return X,y
 
@@ -86,12 +86,13 @@ k = svm.RBFKernel(sigma)
 k = svm.LinKernel()
 X,y = make2dData(200)
 cs = [0.1, 1, 5, 10, 100]
-sigmas = [0.1, 1, 5, 10]
+cs = np.logspace(-2,2,10)
+sigmas = [0.5, 1, 2, 5]
 for c in cs:
   for sigma in sigmas:
     k = svm.RBFKernel(sigma)
     print "c =", c, "sigma = ", sigma
     s = svm.SVM(c,k)
     s.train(X,y)
-    plot2d(s,X,y)
     print "error", s.test(X,y)
+    plot2d(s,X,y)
