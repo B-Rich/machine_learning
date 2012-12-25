@@ -134,6 +134,11 @@ class HiddenMarkovModel:
     fpath.reverse()
     return fpath
 
+  def repair_file(ys, noise='*'):
+    s = 0
+    for chunk in ys.split('*'):
+      path = self.viterbi(encode(chunk))
+
   def generate(self, length):
     """Generate output with the HMM"""
     out = []
